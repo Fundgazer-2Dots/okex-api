@@ -6,7 +6,7 @@ const Signer = require('../signer');
 
 class WsApi extends EventEmitter {
   // constructor(apiKey, apiSecret, passphrase, opt = {}) {
-  constructor(apiKey, apiSecret, passphrase) {
+  constructor(apiKey, apiSecret, passphrase, sandbox) {
     super();
 
     const processMsg = message => {
@@ -23,14 +23,13 @@ class WsApi extends EventEmitter {
         }
       }
     };
-
-    this._public = new WS('wss://ws.okex.com:8443/ws/v5/public');
+    this._public = new WS(sandbox ? 'wss://wspap.okx.com:8443/ws/v5/public?brokerId=9999' : 'wss://ws.okx.com:8443/ws/v5/public');
     this._public.on('error', console.error);
     this._public.on('message', processMsg);
 
     if (apiSecret) {
       this.update(apiKey, apiSecret, passphrase);
-      this._private = new WS('wss://ws.okex.com:8443/ws/v5/private');
+      this._private = new WS(sandbox ? 'wss://wspap.okx.com:8443/ws/v5/private?brokerId=9999' : 'wss://ws.okx.com:8443/ws/v5/private');
       this._private.on('error', console.error);
       this._private.on('open', () => {
         const [timestamp, sign] = this.signer.sign('/users/self/verify');
